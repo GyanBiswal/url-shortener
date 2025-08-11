@@ -61,7 +61,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl font-bold mb-8 font-serif">
-        Welcome to MicroUrl SaaS👋
+        Welcome to Url-Shortener👋
       </h1>
 
       {/* Generate a new Short URL */}
