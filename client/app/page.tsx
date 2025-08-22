@@ -119,7 +119,8 @@ export default function Home() {
   const [generatedShortUrl, setGeneratedShortUrl] = useState("");
   const [error, setError] = useState<string>("");
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+
 
   // Generate short URL
   const handleGenerateShortUrl = async () => {
