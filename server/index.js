@@ -83,12 +83,18 @@ app.get("/:shortUrlId", async (req, res) => {
 });
 
 // Start server after Redis connects
+// Start server after Redis connects
 (async () => {
   try {
     await redisClient.connect();
-    app.listen(process.env.PORT || 3001, () =>
-      console.log(`Backend running on port ${process.env.PORT || 3001}`)
-    );
+
+    const PORT = process.env.PORT;
+    if (!PORT) {
+      console.error("PORT env variable is not set");
+      process.exit(1);
+    }
+
+    app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
