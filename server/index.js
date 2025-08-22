@@ -1,24 +1,36 @@
 import express from "express";
 import cors from "cors";
 import { createClient } from "redis";
-import { encodeBase62 } from "./services/base_62_encoding_service.js";
+import { nanoid } from "nanoid";
 import { URL } from "url";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize Redis client
-const redisClient = createClient({ url: "redis://localhost:6379" });
-redisClient.on("connect", () => console.log("Redis is connected"));
-redisClient.on("error", (err) => console.error("Redis Connection Failed:", err));
+// Initialize Redis client with env variables
+const redisClient = createClient({
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+  socket: {
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+  },
+});
+
+
+
+redisClient.on("connect", () => console.log("Redis Cloud connected"));
+redisClient.on("error", (err) => console.error("Redis Client Error:", err));
 
 // Shorten a long URL
 app.post("/shorten", async (req, res) => {
   let originalURL = req.body.originalURL;
-  if (!originalURL) {
+  if (!originalURL)
     return res.status(400).json({ status: false, error: "Please pass the Long URL" });
-  }
 
   // Handle Google redirect URLs
   if (originalURL.includes("google.com/url")) {
@@ -32,13 +44,15 @@ app.post("/shorten", async (req, res) => {
   }
 
   // Normalize URL
-  if (!/^https?:\/\//i.test(originalURL)) {
-    originalURL = "https://" + originalURL;
-  }
+  if (!/^https?:\/\//i.test(originalURL)) originalURL = "https://" + originalURL;
 
   try {
-    const id = await redisClient.incr("global_counter");
-    const shortUrlId = encodeBase62(id);
+    // Generate unique random ID and ensure no collision
+    let shortUrlId;
+    do {
+      shortUrlId = nanoid(6); // 6-character random ID
+    } while (await redisClient.hExists("urls", shortUrlId));
+
     await redisClient.hSet("urls", shortUrlId, originalURL);
 
     res.json({
@@ -58,11 +72,8 @@ app.get("/:shortUrlId", async (req, res) => {
     const originalUrl = await redisClient.hGet("urls", shortUrlId);
     if (!originalUrl) return res.status(404).send("URL not found");
 
-    // Ensure URL has scheme
     let urlToRedirect = originalUrl;
-    if (!/^https?:\/\//i.test(originalUrl)) {
-      urlToRedirect = "https://" + originalUrl;
-    }
+    if (!/^https?:\/\//i.test(originalUrl)) urlToRedirect = "https://" + originalUrl;
 
     res.redirect(urlToRedirect);
   } catch (error) {
@@ -75,7 +86,9 @@ app.get("/:shortUrlId", async (req, res) => {
 (async () => {
   try {
     await redisClient.connect();
-    app.listen(3001, () => console.log("Backend running on port 3001"));
+    app.listen(process.env.PORT || 3001, () =>
+      console.log(`Backend running on port ${process.env.PORT || 3001}`)
+    );
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
