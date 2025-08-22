@@ -88,7 +88,6 @@ app.get("/", (req, res) => {
 
 
 // Start server after Redis connects
-// Start server after Redis connects
 (async () => {
   try {
     await redisClient.connect();
