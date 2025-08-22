@@ -82,6 +82,11 @@ app.get("/:shortUrlId", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
+
 // Start server after Redis connects
 // Start server after Redis connects
 (async () => {
