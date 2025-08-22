@@ -5,9 +5,9 @@ export default function Home() {
   const [longURL, setLongUrl] = useState("");
   const [shortURL, setShortUrl] = useState("");
   const [generatedShortUrl, setGeneratedShortUrl] = useState("");
-  const [retrievedLongUrl, setRetrievedLongUrl] = useState("");
   const [error, setError] = useState<string>("");
 
+  // Generate short URL
   const handleGenerateShortUrl = async () => {
     try {
       const response = await fetch("http://localhost:3001/shorten", {
@@ -20,7 +20,7 @@ export default function Home() {
 
       const data = await response.json();
       if (response.ok) {
-        setGeneratedShortUrl(data["data"]);
+        setGeneratedShortUrl(data.data);
         setError("");
       } else {
         setError("Failed to generate short URL");
@@ -33,29 +33,15 @@ export default function Home() {
     }
   };
 
-  const handleRetrieveLongUrl = async () => {
+  // Redirect to long URL
+  const handleRedirectToLongUrl = () => {
     if (!shortURL) {
       setError("Please enter a short URL ID");
-      setRetrievedLongUrl("");
       return;
     }
     setError("");
-    setRetrievedLongUrl("");
-
-    try {
-      const response = await fetch(`http://localhost:3001/${shortURL}`);
-      if (!response.ok) {
-        setError("Short URL not found");
-        return;
-      }
-
-      const data = await response.json();
-      setRetrievedLongUrl(data.originalUrl || data.data || "");
-    } catch (err) {
-      console.log(err);
-      setError("Failed to retrieve long URL");
-      setRetrievedLongUrl("");
-    }
+    // Redirect browser to the short URL
+    window.location.href = `http://localhost:3001/${shortURL}`;
   };
 
   return (
@@ -97,9 +83,9 @@ export default function Home() {
         )}
       </div>
 
-      {/* Retrieve Long URL */}
+      {/* Redirect to original URL */}
       <div className="w-full max-w-md bg-gray-800 rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Get your Long URL</h2>
+        <h2 className="text-xl font-semibold mb-4">Go to Original URL</h2>
 
         <input
           type="text"
@@ -110,24 +96,10 @@ export default function Home() {
         />
         <button
           className="w-full mt-4 bg-red-600 rounded-lg hover:bg-red-700 text-white py-2"
-          onClick={handleRetrieveLongUrl}
+          onClick={handleRedirectToLongUrl}
         >
-          Get Long URL
+          Go to Original URL
         </button>
-
-        {retrievedLongUrl && (
-          <p className="mt-4 text-green-400 break-words">
-            Original URL:{" "}
-            <a
-              href={retrievedLongUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              {retrievedLongUrl}
-            </a>
-          </p>
-        )}
 
         {error && <p className="mt-4 text-red-500">{error}</p>}
       </div>
