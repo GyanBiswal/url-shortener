@@ -373,7 +373,7 @@ export default function Home() {
       const data = await response.json();
       // Use the proxy route for clickable short URL
       const shortId = data.data.split("/").pop(); // get the last part
-      setGeneratedShortUrl(`/api/proxy/${shortId}`);
+      setGeneratedShortUrl(`${window.location.origin}/api/proxy/${shortId}`);
       setError("");
     } catch (err) {
       console.error("Fetch error:", err);
